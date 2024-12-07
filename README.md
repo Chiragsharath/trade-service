@@ -42,8 +42,11 @@ An IDE (e.g., IntelliJ IDEA, Eclipse, or VS Code)
 1. Clone the Repository
   
    git clone https://github.com/your-repository/trade-management.git
+
    cd trade-management
+
 2. Configure the Application
+
    Update the application.yml file with your database and security configurations:
 
 yaml
