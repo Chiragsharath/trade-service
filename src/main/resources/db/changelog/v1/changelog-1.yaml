@@ -1,0 +1,58 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Chirag
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            tableExists:
+              tableName: trades_master
+      changes:
+        - createTable:
+            tableName: trades_master
+            columns:
+              - column:
+                  name: id
+                  remarks: "auto-generated id"
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: symbol
+                  type: varchar(250)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: shares
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: double
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: bigint
+                  constraints:
+                    nullable: false
+                  remarks: "Epoch timestamp when the record was created"
+              - column:
+                  name: updated_at
+                  type: bigint
+                  constraints:
+                    nullable: false
+                  remarks: "Epoch timestamp when the record was last updated"
