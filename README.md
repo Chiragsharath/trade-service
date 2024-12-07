@@ -1,3 +1,5 @@
+**Stock Trades API**
+
 **Overview**
 The Trade Management System is a Spring Boot-based RESTful service for managing trade operations and user authentication. It includes secure JWT-based authentication and provides APIs to perform operations like fetching, creating, and managing trades.
 
