@@ -27,29 +27,5 @@ public class SwaggerOpenApiConfig {
                 .addSecurityItem(
                         new SecurityRequirement().addList("bearer-jwt", Arrays.asList("read", "write")));
     }
-//		.addSecurityItem(new SecurityRequirement()
-//		        .addList(securitySchemeName))
-//		      .components(new Components()
-//		        .addSecuritySchemes(securitySchemeName, SecurityScheme)
-//		        //  .name(securitySchemeName)
-//		          //.type()
-//		          .scheme("bearer")
-//		          .bearerFormat("JWT")));
-
-
-    //Add custom header param to all API operations
-//	@Bean
-//    public OpenApiCustomizer openApiCustomiser() {
-//        return openApi -> openApi.getPaths().values().stream()
-//                .flatMap(pathItem -> pathItem.readOperations().stream().filter(operation -> !operation.getOperationId().equals("authenticate"))   )
-//                .forEach(operation ->
-//                operation.addParametersItem(
-//                		new HeaderParameter()
-//                		.required(false)
-//						.name("Authorization")
-//						.description("Bearer Token")
-//                        .$ref("#/components/parameters/Authorization")));
-//
-//    }
 }
 
