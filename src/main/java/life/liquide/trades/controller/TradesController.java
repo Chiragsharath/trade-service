@@ -55,7 +55,7 @@ public class TradesController implements TradesControllerRoute {
   }
 
   @Override
-  public ResponseEntity<ServiceResponse<TradesMasterDto>> createTrade(@NonNull TradesRequestDto tradesRequestDto) {
+  public ResponseEntity<ServiceResponse<TradesMasterDto>> createTrade(TradesRequestDto tradesRequestDto) {
     try {
       ServiceResponse<TradesMasterDto> response = tradeService.createTrade(tradesRequestDto);
       if (response == null) {

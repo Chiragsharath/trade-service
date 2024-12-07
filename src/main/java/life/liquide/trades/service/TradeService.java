@@ -146,7 +146,7 @@ public class TradeService {
         }
     }
 
-    public ServiceResponse<TradesMasterDto> createTrade(@NonNull TradesRequestDto tradesRequestDto) {
+    public ServiceResponse<TradesMasterDto> createTrade(TradesRequestDto tradesRequestDto) {
         try {
             if (tradesRequestDto == null) {
                 log.error("Invalid trade request data: {}", tradesRequestDto);
@@ -163,6 +163,9 @@ public class TradeService {
 
             return new ServiceResponse<>(ServiceResponse.SUCCESS, "Trade created successfully!",
                     TradesMasterDto.convertEntityToDto(savedEntity));
+        } catch (IllegalArgumentException e) {
+            // Re-throw IllegalArgumentException to avoid wrapping it into RuntimeException
+            throw e;
         } catch (Exception e) {
             log.error("Error creating trade: {}", e.getMessage());
             throw new RuntimeException("Error creating trade: " + e.getMessage());
