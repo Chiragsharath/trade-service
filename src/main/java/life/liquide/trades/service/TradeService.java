@@ -6,6 +6,7 @@ import life.liquide.trades.model.TradesMasterDto;
 import life.liquide.trades.model.TradesRequestDto;
 import life.liquide.trades.repository.TradesMasterRepository;
 import life.liquide.trades.response.ServiceResponse;
+import life.liquide.trades.exception.ResourceNotFoundException;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,6 @@ import java.util.Optional;
 @Log4j2
 public class TradeService {
 
-
     @Autowired
     ObjectMapper objectMapper;
 
@@ -31,24 +31,34 @@ public class TradeService {
         Optional<TradesMasterEntity> tradesMasterEntity = tradesMasterRepository.findById(tradeId);
 
 
-        return tradesMasterEntity.map(masterEntity -> new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched Successfully!",
-                TradesMasterDto.convertEntityToDto(masterEntity))).orElse(null);
+        if (tradesMasterEntity.isEmpty()) {
+            log.error("Trade with ID {} not found", tradeId);
+            throw new ResourceNotFoundException("Trade not found for ID: " + tradeId);
+        }
+
+        return new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched Successfully!",
+                TradesMasterDto.convertEntityToDto(tradesMasterEntity.get()));
     }
 
     public ServiceResponse<List<TradesMasterDto>> getTrades(String type, Long userId) {
 
-        if (areBothNull(type, userId)) {
-            return new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched Successfully!",
-                    fetchAllTrades());
-        } else if (isOnlyUserIdPresent(type, userId)) {
-            return new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched Successfully!",
-                    fetchTradesByUserId(userId));
-        } else if (isOnlyTypePresent(type, userId)) {
-            return new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched Successfully!",
-                    fetchTradesByType(type));
-        } else {
-            return new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched Successfully!",
-                    fetchTradesByTypeAndUserId(type, userId));
+        try {
+            if (areBothNull(type, userId)) {
+                return new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched all trades successfully!",
+                        fetchAllTrades());
+            } else if (isOnlyUserIdPresent(type, userId)) {
+                return new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched trades by user ID successfully!",
+                        fetchTradesByUserId(userId));
+            } else if (isOnlyTypePresent(type, userId)) {
+                return new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched trades by type successfully!",
+                        fetchTradesByType(type));
+            } else {
+                return new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched trades by type and user ID successfully!",
+                        fetchTradesByTypeAndUserId(type, userId));
+            }
+        } catch (Exception e) {
+            log.error("Error fetching trades: {}", e.getMessage());
+            return new ServiceResponse<>(ServiceResponse.FAILED, "An error occurred while fetching trades: ",null);
         }
     }
 
@@ -65,56 +75,97 @@ public class TradeService {
     }
 
     private List<TradesMasterDto> fetchAllTrades() {
-
-        List<TradesMasterDto> tradesMasterDtoList = new ArrayList<>();
-        List<TradesMasterEntity> tradesMasterEntities = tradesMasterRepository.findAll();
-        tradesMasterEntities.forEach(tradesMasterEntity -> {
-            tradesMasterDtoList.add(TradesMasterDto.convertEntityToDto(tradesMasterEntity));
-        });
-
-        return tradesMasterDtoList;
+        try {
+            List<TradesMasterDto> tradesMasterDtoList = new ArrayList<>();
+            List<TradesMasterEntity> tradesMasterEntities = tradesMasterRepository.findAll();
+            if (tradesMasterEntities.isEmpty()) {
+                log.warn("No trades found");
+                throw new ResourceNotFoundException("No trades found in the system.");
+            }
+            tradesMasterEntities.forEach(tradesMasterEntity -> {
+                tradesMasterDtoList.add(TradesMasterDto.convertEntityToDto(tradesMasterEntity));
+            });
+            return tradesMasterDtoList;
+        } catch (Exception e) {
+            log.error("Error fetching all trades: {}", e.getMessage());
+            throw new RuntimeException("Error fetching all trades: " + e.getMessage());
+        }
     }
 
     private List<TradesMasterDto> fetchTradesByUserId(Long userId) {
-
-        List<TradesMasterDto> tradesMasterDtoList = new ArrayList<>();
-        List<TradesMasterEntity> tradesMasterEntities = tradesMasterRepository.findAllByUserId(userId);
-        tradesMasterEntities.forEach(tradesMasterEntity -> {
-            tradesMasterDtoList.add(TradesMasterDto.convertEntityToDto(tradesMasterEntity));
-        });
-        return tradesMasterDtoList;
+        try {
+            List<TradesMasterDto> tradesMasterDtoList = new ArrayList<>();
+            List<TradesMasterEntity> tradesMasterEntities = tradesMasterRepository.findAllByUserId(userId);
+            if (tradesMasterEntities.isEmpty()) {
+                log.warn("No trades found for user ID {}", userId);
+                throw new ResourceNotFoundException("No trades found for user ID: " + userId);
+            }
+            tradesMasterEntities.forEach(tradesMasterEntity -> {
+                tradesMasterDtoList.add(TradesMasterDto.convertEntityToDto(tradesMasterEntity));
+            });
+            return tradesMasterDtoList;
+        } catch (Exception e) {
+            log.error("Error fetching trades by user ID {}: {}", userId, e.getMessage());
+            throw new RuntimeException("Error fetching trades by user ID: " + e.getMessage());
+        }
     }
 
     private List<TradesMasterDto> fetchTradesByType(String type) {
-        List<TradesMasterDto> tradesMasterDtoList = new ArrayList<>();
-        List<TradesMasterEntity> tradesMasterEntities = tradesMasterRepository.findAllByType(type);
-        tradesMasterEntities.forEach(tradesMasterEntity -> {
-            tradesMasterDtoList.add(TradesMasterDto.convertEntityToDto(tradesMasterEntity));
-        });
-        return tradesMasterDtoList;
+        try {
+            List<TradesMasterDto> tradesMasterDtoList = new ArrayList<>();
+            List<TradesMasterEntity> tradesMasterEntities = tradesMasterRepository.findAllByType(type);
+            if (tradesMasterEntities.isEmpty()) {
+                log.warn("No trades found for type {}", type);
+                throw new ResourceNotFoundException("No trades found for type: " + type);
+            }
+            tradesMasterEntities.forEach(tradesMasterEntity -> {
+                tradesMasterDtoList.add(TradesMasterDto.convertEntityToDto(tradesMasterEntity));
+            });
+            return tradesMasterDtoList;
+        } catch (Exception e) {
+            log.error("Error fetching trades by type {}: {}", type, e.getMessage());
+            throw new RuntimeException("Error fetching trades by type: " + e.getMessage());
+        }
     }
 
     private List<TradesMasterDto> fetchTradesByTypeAndUserId(String type, Long userId) {
-        List<TradesMasterDto> tradesMasterDtoList = new ArrayList<>();
-        List<TradesMasterEntity> tradesMasterEntities = tradesMasterRepository.findAllByTypeAndUserId(type,userId);
-        tradesMasterEntities.forEach(tradesMasterEntity -> {
-            tradesMasterDtoList.add(TradesMasterDto.convertEntityToDto(tradesMasterEntity));
-        });
-        return tradesMasterDtoList;
+        try {
+            List<TradesMasterDto> tradesMasterDtoList = new ArrayList<>();
+            List<TradesMasterEntity> tradesMasterEntities = tradesMasterRepository.findAllByTypeAndUserId(type, userId);
+            if (tradesMasterEntities.isEmpty()) {
+                log.warn("No trades found for type {} and user ID {}", type, userId);
+                throw new ResourceNotFoundException("No trades found for type and user ID.");
+            }
+            tradesMasterEntities.forEach(tradesMasterEntity -> {
+                tradesMasterDtoList.add(TradesMasterDto.convertEntityToDto(tradesMasterEntity));
+            });
+            return tradesMasterDtoList;
+        } catch (Exception e) {
+            log.error("Error fetching trades by type {} and user ID {}: {}", type, userId, e.getMessage());
+            throw new RuntimeException("Error fetching trades by type and user ID: " + e.getMessage());
+        }
     }
 
+    public ServiceResponse<TradesMasterDto> createTrade(@NonNull TradesRequestDto tradesRequestDto) {
+        try {
+            if (tradesRequestDto == null) {
+                log.error("Invalid trade request data: {}", tradesRequestDto);
+                throw new IllegalArgumentException("Trade request data cannot be null");
+            }
 
-    public ServiceResponse<TradesMasterDto> createTrade(@NonNull TradesRequestDto tradesMasterDto) {
+            TradesMasterEntity tradesMasterEntity = TradesMasterEntity.convertDtoToEntity(tradesRequestDto);
+            TradesMasterEntity savedEntity = tradesMasterRepository.save(tradesMasterEntity);
 
-        TradesMasterEntity tradesMasterEntity = TradesMasterEntity.convertDtoToEntity(tradesMasterDto);
+            if (Objects.isNull(savedEntity)) {
+                log.error("Failed to save trade: {}", tradesRequestDto);
+                throw new RuntimeException("Failed to create trade.");
+            }
 
-        TradesMasterEntity save = tradesMasterRepository.save(tradesMasterEntity);
-        if (Objects.nonNull(save))
-        {
-            return new ServiceResponse<>(ServiceResponse.SUCCESS, "Fetched Successfully!",
-                   TradesMasterDto.convertEntityToDto(save));
+            return new ServiceResponse<>(ServiceResponse.SUCCESS, "Trade created successfully!",
+                    TradesMasterDto.convertEntityToDto(savedEntity));
+        } catch (Exception e) {
+            log.error("Error creating trade: {}", e.getMessage());
+            throw new RuntimeException("Error creating trade: " + e.getMessage());
         }
-
-        return null;
     }
 }
