@@ -41,7 +41,7 @@ An IDE (e.g., IntelliJ IDEA, Eclipse, or VS Code)
 
 1. Clone the Repository
   
-   git clone https://github.com/your-repository/trade-management.git
+   git clone https://github.com/Chiragsharath/trade-service
 
    cd trade-management
 
